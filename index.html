@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <style>
+    body {
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .button {
+      color: green;
+      height: 48px;
+      border: none;
+      outline-offset: 4px;
+      padding: 0;
+      border-radius: 8px;
+      background: hsl(55deg 100% 32%);
+      width: fit-content;
+      cursor: pointer;
+    }
+    .push {
+      background: hsl(55deg 100% 47%);
+      display: block;
+      border-radius: 8px;
+      padding: 16px 22px;
+      transition: transform 300ms cubic-bezier(0.3, 0.7, 0.4, 1);
+      transform: translateY(-6px);
+    }
+    .button:active .push {
+      transform: translateY(-1px);
+      transition: transform 54ms;
+    }
+    .counter-main {
+      font-size: 24px;
+    }
+  </style>
+  <body>
+    <div id="app"></div>
+    <script type="text/babel">
+      const Dalays = () => {
+        const DELAYEDVALUE_DELAY = 2000;
+        const DEBOUNCE_DELAY = 2000;
+        const timeStep = 1000;
+
+        const [count, setCount] = React.useState(0);
+        const [clickedCount, setClickedCount] = React.useState(0);
+
+        const [delayedvalueTimer, setDelayedvalueTimer] = React.useState(0);
+        const [debounceTimer, setDebounceTimer] = React.useState(0);
+        
+        const delayedvalueFuncRef = React.useRef(delayedvalue((val) => {
+          setCount(val);
+        }, DELAYEDVALUE_DELAY));
+        const delayedvalueIntervalRef = React.useRef()
+
+        const debounceFuncRef = React.useRef(debounce((val) => {
+          setCount(val);
+        }, DEBOUNCE_DELAY));
+        const countRef = React.useRef(0);
+
+        const setDelaedValueInterval = () => {
+          delayedvalueIntervalRef.current = setInterval(() => {
+            setDelayedvalueTimer((old) => {
+              if (old <= 0) {
+              clearInterval(delayedvalueIntervalRef.current)
+              return old
+            }
+              return old - timeStep;
+            });
+
+          }, timeStep);
+        }
+
+        //  useInterval(
+        //   () => {
+        //     delayedvalueTimer && setDelayedvalueTimer(delayedvalueTimer - timeStep);
+        //     debounceTimer && setDebounceTimer(debounceTimer - timeStep);
+        //   },
+        //   delayedvalueTimer + debounceTimer > 0 ? timeStep : null
+        // );
+
+        const startDelaedValueInterval = () => {
+          // delayedvalueTimer === 0 && setDelayedvalueTimer(DELAYEDVALUE_DELAY);
+          delayedvalueTimer === 0 && setDelayedvalueTimer(DELAYEDVALUE_DELAY);
+          delayedvalueTimer === 0 && delayedvalueIntervalRef.current && clearInterval(delayedvalueIntervalRef.current);
+          delayedvalueTimer === 0 && setDelaedValueInterval();
+        };
+        const refreshDebounceTimer = () => {
+          setDebounceTimer(DEBOUNCE_DELAY);
+          // clearInterval();
+        };
+
+      
+
+
+
+        const onDelayedValueClick = () => {
+          countRef.current +=1;
+          setClickedCount(clickedCount + 1);
+          startDelaedValueInterval();
+          delayedvalueFuncRef.current(countRef.current);
+
+          // if (!delayedvalueTimer) {
+          //   refreshDelayedvalueTimer();
+          // }
+        }
+        const onDebounceClick = () => {
+          countRef.current +=1;
+          debounceFuncRef.current(countRef.current);
+          refreshDebounceTimer();
+          setClickedCount(clickedCount + 1);
+        }
+
+        return (
+          <div>
+            <div>
+            <div className="counter-main">{count}</div>
+            {delayedvalueTimer === timeStep && '<'}
+            <div>{clickedCount}</div>
+            <button
+              className="button"
+              onClick={() => {
+                onDelayedValueClick()
+              }}
+            >
+              <span className="push">delayed value</span>
+            </button>
+            <div>{delayedvalueTimer}</div>
+          </div>
+          <div>
+            <div>{clickedCount}</div>
+            <button
+              className="button"
+              onClick={() => {
+                onDebounceClick()
+              }}
+            >
+              <span className="push">debounce</span>
+            </button>
+            <div>{debounceTimer}</div>
+            </div>
+            <div>
+              a_k_off
+              </div>
+            </div>
+        );
+
+        function debounce(func, wait) {
+    let timeout;
+    return (...args) => {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func(...args);
+        }, wait);
+      } else {
+        timeout = setTimeout(() => {
+            func(...args);
+        }, wait);
+      }
+    };
+};
+
+        function delayedvalue(func, wait) {
+          let timeout;
+          let lastArgs;
+          return (...args) => {
+            lastArgs = args;
+
+            if (!timeout) {
+              timeout = setTimeout(() => {
+                timeout = null;
+                func(...lastArgs);
+              }, wait);
+            }
+          };
+        };
+
+        function useInterval(callback, delay) {
+          const savedCallback = React.useRef(callback);
+          const intervalId = React.useRef();
+
+          React.useLayoutEffect(() => {
+            savedCallback.current = callback;
+          }, [callback]);
+
+          React.useEffect(() => {
+            if (!delay) {
+              return;
+            }
+
+            intervalId.current = setInterval(() => savedCallback.current(), delay);
+
+            return () => clearInterval(intervalId.current);
+          }, [delay]);
+        }
+      };
+
+      ReactDOM.render(<Dalays />, document.getElementById("app"));
+    </script>
+  </body>
+</html>
