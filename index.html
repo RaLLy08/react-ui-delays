@@ -84,12 +84,45 @@
   <body>
     <div id="app"></div>
     <script type="text/babel">
+      const AnimateText = (props) => {
+        const { frames, speed = 100 } = props;
+
+        const [frame, setFrame] = React.useState(frames[0]);
+        const timeoutRef = React.useRef();
+        const countRef = React.useRef(1);
+
+        React.useEffect(() => {
+          countRef.current = 0;
+          const update = () => {
+            setFrame(frames[countRef.current]);
+
+            if (countRef.current < frames.length - 1) {
+              timeoutRef.current = setTimeout(() => {
+                update();
+              }, speed);
+
+              countRef.current += 1;
+            } else {
+              countRef.current = 0;
+            }
+          };
+
+          update();
+
+          return () => clearTimeout(timeoutRef.current);
+        }, [frames]);
+
+        return <div>{frame}</div>;
+      };
+
       const Dalays = () => {
-        const DELAYEDVALUE_DELAY = 2000;
-        const DEBOUNCE_DELAY = 2000;
+        const DELAYEDVALUE_DELAY = 1000;
+        const DEBOUNCE_DELAY = 1000;
         const timeStep = 10;
 
         const [count, setCount] = React.useState(0);
+        const oldCount = React.useRef(0);
+
         const [clickedCount, setClickedCount] = React.useState(0);
 
         const [delayedvalueTimer, setDelayedvalueTimer] = React.useState(0);
@@ -97,7 +130,11 @@
 
         const delayedvalueFuncRef = React.useRef(
           delayedvalue((val) => {
-            setCount(val);
+  
+            setCount((old) => {
+              oldCount.current = old;
+              return val;
+            });
           }, DELAYEDVALUE_DELAY)
         );
         const delayedvalueIntervalRef = React.useRef();
@@ -105,7 +142,10 @@
 
         const debounceFuncRef = React.useRef(
           debounce((val) => {
-            setCount(val);
+            setCount((old) => {
+              oldCount.current = old;
+              return val;
+            });
           }, DEBOUNCE_DELAY)
         );
         const countRef = React.useRef(0);
@@ -135,7 +175,6 @@
         };
 
         const startDelaedValueInterval = () => {
-          // delayedvalueTimer === 0 && setDelayedvalueTimer(DELAYEDVALUE_DELAY);
           if (delayedvalueTimer === 0) {
             setDelayedvalueTimer(DELAYEDVALUE_DELAY);
             delayedvalueIntervalRef.current &&
@@ -156,9 +195,6 @@
           startDelaedValueInterval();
           delayedvalueFuncRef.current(countRef.current);
 
-          // if (!delayedvalueTimer) {
-          //   refreshDelayedvalueTimer();
-          // }
         };
         const onDebounceClick = () => {
           countRef.current += 1;
@@ -166,17 +202,19 @@
           refreshDebounceTimer();
           setClickedCount(clickedCount + 1);
         };
-
+        const frames = React.useMemo(() => Array.from(Array(count + 1 - oldCount.current), (el, i) => i + oldCount.current ), [count]);
         return (
           <div>
             <div>
               <div className="wrapper__counter">
-                <div className="counter-main">{count}</div>
+                <div className="counter-main">
+                  <AnimateText frames={frames} speed={40}/> 
+                </div>
                 <div className="counter-arrow">
-                  {((!!debounceTimer && debounceTimer < 1000) ||
-                    (!!delayedvalueTimer && delayedvalueTimer < 1000)) && (
+                  {((!!debounceTimer && debounceTimer < 500) ||
+                    (!!delayedvalueTimer && delayedvalueTimer < 500)) && (
                     <i className="arrow up"></i>
-                  )}{" "}
+                  )}
                 </div>
                 <div className="counter-delayed">{clickedCount}</div>
               </div>
