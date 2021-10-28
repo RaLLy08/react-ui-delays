@@ -17,6 +17,12 @@
       align-items: center;
     }
     .button {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
       color: green;
       height: 48px;
       border: none;
@@ -67,13 +73,13 @@
       width: 130px;
     }
     .arrow {
-  border: solid black;
-  border-width: 0 3px 3px 0;
-  display: inline-block;
-  padding: 3px;
-  transform: rotate(-135deg);
-  -webkit-transform: rotate(-135deg);
-}
+      border: solid black;
+      border-width: 0 3px 3px 0;
+      display: inline-block;
+      padding: 3px;
+      transform: rotate(-135deg);
+      -webkit-transform: rotate(-135deg);
+    }
   </style>
   <body>
     <div id="app"></div>
@@ -166,40 +172,49 @@
             <div>
               <div className="wrapper__counter">
                 <div className="counter-main">{count}</div>
-                <div className="counter-arrow">{((!!debounceTimer && (debounceTimer < 1000)) || (!!delayedvalueTimer && (delayedvalueTimer < 1000))) && <i className="arrow up"></i>} </div>
+                <div className="counter-arrow">
+                  {((!!debounceTimer && debounceTimer < 1000) ||
+                    (!!delayedvalueTimer && delayedvalueTimer < 1000)) && (
+                    <i className="arrow up"></i>
+                  )}{" "}
+                </div>
                 <div className="counter-delayed">{clickedCount}</div>
               </div>
             </div>
             <div className="wrapper__buttons">
               <div className="buttons__button">
-              <button
-                className="button"
-                onClick={() => {
-                  onDelayedValueClick();
-                }}
-              >
-                <span className="push">delayed value</span>
-              </button>
-              <div buttons__>
-                <progress
-                className="buttons__progress"
-                max={DELAYEDVALUE_DELAY}
-                value={delayedvalueTimer}
-              ></progress>
+                <button
+                  className="button"
+                  onClick={() => {
+                    onDelayedValueClick();
+                  }}
+                >
+                  <span className="push">delayed value</span>
+                </button>
+                <div buttons__>
+                  <progress
+                    className="buttons__progress"
+                    max={DELAYEDVALUE_DELAY}
+                    value={delayedvalueTimer}
+                  ></progress>
                 </div>
               </div>
-            <div className="buttons__button">
-              <button
-                className="button"
-                onClick={() => {
-                  onDebounceClick();
-                }}
-              >
-                <span className="push">debounce</span>
-              </button>
-              <progress className="buttons__progress" max={DEBOUNCE_DELAY} value={debounceTimer}></progress>
-            </div>
+              <div className="buttons__button">
+                <button
+                  className="button"
+                  onClick={() => {
+                    onDebounceClick();
+                  }}
+                >
+                  <span className="push">debounce</span>
+                </button>
+                <progress
+                  className="buttons__progress"
+                  max={DEBOUNCE_DELAY}
+                  value={debounceTimer}
+                ></progress>
               </div>
+            </div>
           </div>
         );
 
