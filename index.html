@@ -24,7 +24,7 @@
       padding: 0;
       border-radius: 8px;
       background: hsl(55deg 100% 32%);
-      width: fit-content;
+      width: 130px;
       cursor: pointer;
     }
     .push {
@@ -39,9 +39,41 @@
       transform: translateY(-1px);
       transition: transform 54ms;
     }
-    .counter-main {
-      font-size: 24px;
+    .wrapper__counter {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
+    .counter-main {
+      font-size: 108px;
+    }
+    .counter-delayed {
+      color: gray;
+      font-size: 64px;
+    }
+    .wrapper__buttons {
+      display: flex;
+      gap: 60px;
+    }
+    .buttons__button {
+      display: flex;
+      flex-direction: column;
+    }
+    .counter-arrow {
+      height: 20px;
+    }
+    .buttons__progress {
+      width: 130px;
+    }
+    .arrow {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
   </style>
   <body>
     <div id="app"></div>
@@ -49,62 +81,71 @@
       const Dalays = () => {
         const DELAYEDVALUE_DELAY = 2000;
         const DEBOUNCE_DELAY = 2000;
-        const timeStep = 1000;
+        const timeStep = 10;
 
         const [count, setCount] = React.useState(0);
         const [clickedCount, setClickedCount] = React.useState(0);
 
         const [delayedvalueTimer, setDelayedvalueTimer] = React.useState(0);
         const [debounceTimer, setDebounceTimer] = React.useState(0);
-        
-        const delayedvalueFuncRef = React.useRef(delayedvalue((val) => {
-          setCount(val);
-        }, DELAYEDVALUE_DELAY));
-        const delayedvalueIntervalRef = React.useRef()
 
-        const debounceFuncRef = React.useRef(debounce((val) => {
-          setCount(val);
-        }, DEBOUNCE_DELAY));
+        const delayedvalueFuncRef = React.useRef(
+          delayedvalue((val) => {
+            setCount(val);
+          }, DELAYEDVALUE_DELAY)
+        );
+        const delayedvalueIntervalRef = React.useRef();
+        const debounceIntervalRef = React.useRef();
+
+        const debounceFuncRef = React.useRef(
+          debounce((val) => {
+            setCount(val);
+          }, DEBOUNCE_DELAY)
+        );
         const countRef = React.useRef(0);
 
         const setDelaedValueInterval = () => {
           delayedvalueIntervalRef.current = setInterval(() => {
             setDelayedvalueTimer((old) => {
               if (old <= 0) {
-              clearInterval(delayedvalueIntervalRef.current)
-              return old
-            }
+                clearInterval(delayedvalueIntervalRef.current);
+                return old;
+              }
               return old - timeStep;
             });
-
           }, timeStep);
-        }
+        };
 
-        //  useInterval(
-        //   () => {
-        //     delayedvalueTimer && setDelayedvalueTimer(delayedvalueTimer - timeStep);
-        //     debounceTimer && setDebounceTimer(debounceTimer - timeStep);
-        //   },
-        //   delayedvalueTimer + debounceTimer > 0 ? timeStep : null
-        // );
+        const setDebounceInterval = () => {
+          debounceIntervalRef.current = setInterval(() => {
+            setDebounceTimer((old) => {
+              if (old <= 0) {
+                clearInterval(debounceIntervalRef.current);
+                return old;
+              }
+              return old - timeStep;
+            });
+          }, timeStep);
+        };
 
         const startDelaedValueInterval = () => {
           // delayedvalueTimer === 0 && setDelayedvalueTimer(DELAYEDVALUE_DELAY);
-          delayedvalueTimer === 0 && setDelayedvalueTimer(DELAYEDVALUE_DELAY);
-          delayedvalueTimer === 0 && delayedvalueIntervalRef.current && clearInterval(delayedvalueIntervalRef.current);
-          delayedvalueTimer === 0 && setDelaedValueInterval();
+          if (delayedvalueTimer === 0) {
+            setDelayedvalueTimer(DELAYEDVALUE_DELAY);
+            delayedvalueIntervalRef.current &&
+              clearInterval(delayedvalueIntervalRef.current);
+            setDelaedValueInterval();
+          }
         };
         const refreshDebounceTimer = () => {
           setDebounceTimer(DEBOUNCE_DELAY);
-          // clearInterval();
+          debounceIntervalRef.current &&
+            clearInterval(debounceIntervalRef.current);
+          setDebounceInterval();
         };
 
-      
-
-
-
         const onDelayedValueClick = () => {
-          countRef.current +=1;
+          countRef.current += 1;
           setClickedCount(clickedCount + 1);
           startDelaedValueInterval();
           delayedvalueFuncRef.current(countRef.current);
@@ -112,63 +153,71 @@
           // if (!delayedvalueTimer) {
           //   refreshDelayedvalueTimer();
           // }
-        }
+        };
         const onDebounceClick = () => {
-          countRef.current +=1;
+          countRef.current += 1;
           debounceFuncRef.current(countRef.current);
           refreshDebounceTimer();
           setClickedCount(clickedCount + 1);
-        }
+        };
 
         return (
           <div>
             <div>
-            <div className="counter-main">{count}</div>
-            {delayedvalueTimer === timeStep && '<'}
-            <div>{clickedCount}</div>
-            <button
-              className="button"
-              onClick={() => {
-                onDelayedValueClick()
-              }}
-            >
-              <span className="push">delayed value</span>
-            </button>
-            <div>{delayedvalueTimer}</div>
-          </div>
-          <div>
-            <div>{clickedCount}</div>
-            <button
-              className="button"
-              onClick={() => {
-                onDebounceClick()
-              }}
-            >
-              <span className="push">debounce</span>
-            </button>
-            <div>{debounceTimer}</div>
-            </div>
-            <div>
-              a_k_off
+              <div className="wrapper__counter">
+                <div className="counter-main">{count}</div>
+                <div className="counter-arrow">{((!!debounceTimer && (debounceTimer < 1000)) || (!!delayedvalueTimer && (delayedvalueTimer < 1000))) && <i className="arrow up"></i>} </div>
+                <div className="counter-delayed">{clickedCount}</div>
               </div>
             </div>
+            <div className="wrapper__buttons">
+              <div className="buttons__button">
+              <button
+                className="button"
+                onClick={() => {
+                  onDelayedValueClick();
+                }}
+              >
+                <span className="push">delayed value</span>
+              </button>
+              <div buttons__>
+                <progress
+                className="buttons__progress"
+                max={DELAYEDVALUE_DELAY}
+                value={delayedvalueTimer}
+              ></progress>
+                </div>
+              </div>
+            <div className="buttons__button">
+              <button
+                className="button"
+                onClick={() => {
+                  onDebounceClick();
+                }}
+              >
+                <span className="push">debounce</span>
+              </button>
+              <progress className="buttons__progress" max={DEBOUNCE_DELAY} value={debounceTimer}></progress>
+            </div>
+              </div>
+          </div>
         );
 
         function debounce(func, wait) {
-    let timeout;
-    return (...args) => {
-      if (timeout) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            func(...args);
-        }, wait);
-      } else {
-        timeout = setTimeout(() => {
-            func(...args);
-        }, wait);
-      }
-    };
-};
+          let timeout;
+          return (...args) => {
+            if (timeout) {
+              clearTimeout(timeout);
+              timeout = setTimeout(() => {
+                func(...args);
+              }, wait);
+            } else {
+              timeout = setTimeout(() => {
+                func(...args);
+              }, wait);
+            }
+          };
+        }
 
         function delayedvalue(func, wait) {
           let timeout;
@@ -183,7 +232,7 @@
               }, wait);
             }
           };
-        };
+        }
 
         function useInterval(callback, delay) {
           const savedCallback = React.useRef(callback);
@@ -198,7 +247,10 @@
               return;
             }
 
-            intervalId.current = setInterval(() => savedCallback.current(), delay);
+            intervalId.current = setInterval(
+              () => savedCallback.current(),
+              delay
+            );
 
             return () => clearInterval(intervalId.current);
           }, [delay]);
