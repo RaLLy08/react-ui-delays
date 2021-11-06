@@ -54,7 +54,7 @@
     .counter-main {
       font-size: 108px;
     }
-    .counter-delayed {
+    .counter-throttle {
       color: gray;
       font-size: 64px;
     }
@@ -116,7 +116,7 @@
       };
 
       const Dalays = () => {
-        const DELAYEDVALUE_DELAY = 1000;
+        const THROTTLE_DELAY = 1000;
         const DEBOUNCE_DELAY = 1000;
         const timeStep = 10;
 
@@ -125,19 +125,19 @@
 
         const [clickedCount, setClickedCount] = React.useState(0);
 
-        const [delayedvalueTimer, setDelayedvalueTimer] = React.useState(0);
+        const [throttleTimer, setThrottleTimer] = React.useState(0);
         const [debounceTimer, setDebounceTimer] = React.useState(0);
 
-        const delayedvalueFuncRef = React.useRef(
-          delayedvalue((val) => {
+        const throttleFuncRef = React.useRef(
+          throttle((val) => {
   
             setCount((old) => {
               oldCount.current = old;
               return val;
             });
-          }, DELAYEDVALUE_DELAY)
+          }, THROTTLE_DELAY)
         );
-        const delayedvalueIntervalRef = React.useRef();
+        const throttleIntervalRef = React.useRef();
         const debounceIntervalRef = React.useRef();
 
         const debounceFuncRef = React.useRef(
@@ -151,10 +151,10 @@
         const countRef = React.useRef(0);
 
         const setDelaedValueInterval = () => {
-          delayedvalueIntervalRef.current = setInterval(() => {
-            setDelayedvalueTimer((old) => {
+          throttleIntervalRef.current = setInterval(() => {
+            setThrottleTimer((old) => {
               if (old <= 0) {
-                clearInterval(delayedvalueIntervalRef.current);
+                clearInterval(throttleIntervalRef.current);
                 return old;
               }
               return old - timeStep;
@@ -175,10 +175,10 @@
         };
 
         const startDelaedValueInterval = () => {
-          if (delayedvalueTimer === 0) {
-            setDelayedvalueTimer(DELAYEDVALUE_DELAY);
-            delayedvalueIntervalRef.current &&
-              clearInterval(delayedvalueIntervalRef.current);
+          if (throttleTimer === 0) {
+            setThrottleTimer(THROTTLE_DELAY);
+            throttleIntervalRef.current &&
+              clearInterval(throttleIntervalRef.current);
             setDelaedValueInterval();
           }
         };
@@ -189,11 +189,11 @@
           setDebounceInterval();
         };
 
-        const onDelayedValueClick = () => {
+        const onThrottleClick = () => {
           countRef.current += 1;
           setClickedCount(clickedCount + 1);
           startDelaedValueInterval();
-          delayedvalueFuncRef.current(countRef.current);
+          throttleFuncRef.current(countRef.current);
 
         };
         const onDebounceClick = () => {
@@ -212,11 +212,11 @@
                 </div>
                 <div className="counter-arrow">
                   {((!!debounceTimer && debounceTimer < 500) ||
-                    (!!delayedvalueTimer && delayedvalueTimer < 500)) && (
+                    (!!throttleTimer && throttleTimer < 500)) && (
                     <i className="arrow up"></i>
                   )}
                 </div>
-                <div className="counter-delayed">{clickedCount}</div>
+                <div className="counter-throttle">{clickedCount}</div>
               </div>
             </div>
             <div className="wrapper__buttons">
@@ -224,16 +224,16 @@
                 <button
                   className="button"
                   onClick={() => {
-                    onDelayedValueClick();
+                    onThrottleClick();
                   }}
                 >
-                  <span className="push">delayed value</span>
+                  <span className="push">throttle</span>
                 </button>
                 <div>
                   <progress
                     className="buttons__progress"
-                    max={DELAYEDVALUE_DELAY}
-                    value={delayedvalueTimer}
+                    max={THROTTLE_DELAY}
+                    value={throttleTimer}
                   ></progress>
                 </div>
               </div>
@@ -272,7 +272,7 @@
           };
         }
 
-        function delayedvalue(func, wait) {
+        function throttle(func, wait) {
           let timeout;
           let lastArgs;
           return (...args) => {
